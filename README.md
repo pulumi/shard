@@ -29,7 +29,7 @@ We can discover test cases significantly faster by essentially `grep`-ing for pa
 
 * A test can potentially be executed more than once if another package shares a test with the same name.
   Renaming your tests to be globally unique is currently the best workaround if you want to guarantee a single execution per test function.
-  You can discover test with name collisions by running `shard --total 1 --index 0`.
+  You can discover tests with name collisions by running `shard --total 1 --index 0`.
 * Benchmarks aren't currently collected so running with `-bench` will not have any effect.
       
 

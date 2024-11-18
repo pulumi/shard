@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -24,30 +25,56 @@ func main() {
 	index := flag.Int("index", -1, "shard index to collect tests for")
 	total := flag.Int("total", -1, "total number of shards")
 	seed := flag.Int64("seed", 0, "randomly shuffle tests using this seed")
+	output := flag.String("output", "", "output format (env)")
 
 	flag.Parse()
-	if *index < 0 {
-		log.Fatal("index is required")
+
+	p := prog{index: *index, total: *total, seed: *seed, root: *root, output: *output}
+	out, err := p.run()
+	if err != nil {
+		log.Fatal(err.Error())
 	}
-	if *total < 0 {
-		log.Fatal("total is required")
+	fmt.Fprint(os.Stdout, out)
+}
+
+type prog struct {
+	index  int
+	total  int
+	seed   int64
+	root   string
+	output string
+}
+
+func (p prog) run() (string, error) {
+	if p.index < 0 {
+		return "", errors.New("index is required")
 	}
-	if *index >= *total {
-		log.Fatal("index must be less than total")
+	if p.total < 0 {
+		return "", errors.New("total is required")
+	}
+	if p.index >= p.total {
+		return "", errors.New("index must be less than total")
 	}
 
-	tests, err := internal.Collect(*root)
+	tests, err := internal.Collect(p.root)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	names, paths := internal.Assign(tests, *index, *total, *seed)
+	names, paths := internal.Assign(tests, p.index, p.total, p.seed)
 
 	// No-op if we didn't find any tests or get any assigned.
 	if len(paths) == 0 {
-		paths = []string{*root}
+		paths = []string{p.root}
 		names = []string{"NoTestsFound"}
 	}
 
-	fmt.Printf("-run ^(%s)$ %s\n", strings.Join(names, "|"), strings.Join(paths, " "))
+	pattern := fmt.Sprintf(`^(?:%s)\$`, strings.Join(names, "|"))
+
+	switch p.output {
+	case "env":
+		return fmt.Sprintf("SHARD_TESTS=%s\nSHARD_PATHS=%s", pattern, strings.Join(paths, " ")), nil
+	default:
+		return fmt.Sprintf("-run %s  %s", pattern, strings.Join(paths, " ")), nil
+	}
 }
