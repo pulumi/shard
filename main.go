@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/blampe/shard/internal"
+	"github.com/pulumi/shard/internal"
 )
 
 type testf struct {
