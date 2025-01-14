@@ -20,13 +20,15 @@ type testf struct {
 	Name string
 }
 
-func ignoreDir(name string) bool {
-	switch name {
-	case "testdata", "vendor":
-		return true
-	default:
+func isGoModule(path string) bool {
+	_, err := os.Lstat(filepath.Join(path, "go.mod"))
+	if os.IsNotExist(err) {
 		return false
 	}
+	if err != nil {
+		panic(err)
+	}
+	return true
 }
 
 func Collect(root string) ([]testf, error) {
@@ -37,7 +39,7 @@ func Collect(root string) ([]testf, error) {
 		}
 
 		// Don't collect testdata directories.
-		if info.IsDir() && ignoreDir(filepath.Base(info.Name())) {
+		if info.IsDir() && (filepath.Base(info.Name()) == "testdata" || (info.Name() != root && isGoModule(info.Name()))) {
 			return filepath.SkipDir
 		}
 
