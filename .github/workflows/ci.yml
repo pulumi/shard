@@ -11,9 +11,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
       - run: go test -coverpkg ./... -coverprofile coverage.txt ./...
       - uses: codecov/codecov-action@v5
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60

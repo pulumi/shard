@@ -92,7 +92,7 @@ func Assign(tests []testf, index int, total int, seed int64) (names, paths []str
 
 	names = slices.CompactFunc(names, func(l, r string) bool {
 		if l == r {
-			fmt.Fprintln(os.Stderr, fmt.Sprintf("warning: %q exists in multiple packages, consider renaming it", l))
+			fmt.Fprintf(os.Stderr, "warning: %q exists in multiple packages, consider renaming it\n", l)
 		}
 		return l == r
 	})
