@@ -39,7 +39,9 @@ func Collect(root string) ([]testf, error) {
 		}
 
 		// Don't collect testdata directories.
-		if info.IsDir() && (filepath.Base(info.Name()) == "testdata" || (info.Name() != root && isGoModule(info.Name()))) {
+		if info.IsDir() &&
+			(filepath.Base(info.Name()) == "testdata" || filepath.Base(info.Name()) == "vendor" ||
+				(info.Name() != root && isGoModule(info.Name()))) {
 			return filepath.SkipDir
 		}
 
