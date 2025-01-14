@@ -20,6 +20,15 @@ type testf struct {
 	Name string
 }
 
+func ignoreDir(name string) bool {
+	switch name {
+	case "testdata", "vendor":
+		return true
+	default:
+		return false
+	}
+}
+
 func Collect(root string) ([]testf, error) {
 	tests := []testf{}
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -28,7 +37,7 @@ func Collect(root string) ([]testf, error) {
 		}
 
 		// Don't collect testdata directories.
-		if info.IsDir() && filepath.Base(info.Name()) == "testdata" {
+		if info.IsDir() && ignoreDir(filepath.Base(info.Name())) {
 			return filepath.SkipDir
 		}
 
