@@ -12,11 +12,6 @@ import (
 	"github.com/pulumi/shard/internal"
 )
 
-type testf struct {
-	path string
-	name string
-}
-
 func main() {
 	log.SetFlags(0)
 	log.SetPrefix(filepath.Base(os.Args[0]) + ": ")
