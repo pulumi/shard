@@ -68,7 +68,8 @@ func (p prog) run() (string, error) {
 
 	switch p.output {
 	case "env":
-		return fmt.Sprintf(`SHARD_TESTS="%s"\nSHARD_PATHS="%s"`, pattern, strings.Join(paths, " ")), nil
+		return fmt.Sprintf(`SHARD_TESTS="%s"
+SHARD_PATHS="%s"`, pattern, strings.Join(paths, " ")), nil
 	default:
 		return fmt.Sprintf(`-run "%s"  %s`, pattern, strings.Join(paths, " ")), nil
 	}
