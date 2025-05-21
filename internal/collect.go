@@ -80,6 +80,39 @@ func Collect(root string) ([]testf, error) {
 	return tests, err
 }
 
+func CheckForClashingTestNames(tests []testf) []string {
+	slices.SortStableFunc(tests, func(a, b testf) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	repeats := map[string]struct{}{}
+	prefixed := map[string]int{}
+
+	for i := 0; i < len(tests)-1; i++ {
+		for j := i + 1; j < len(tests); j++ {
+			if tests[i].Name == tests[j].Name {
+				repeats[tests[i].Name] = struct{}{}
+				continue
+			}
+			if strings.HasPrefix(tests[i].Name, tests[j].Name) {
+				prefixed[tests[j].Name]++
+			}
+			if strings.HasPrefix(tests[j].Name, tests[i].Name) {
+				prefixed[tests[i].Name]++
+			}
+		}
+	}
+
+	warnings := []string{}
+	for name := range repeats {
+		warnings = append(warnings, fmt.Sprintf("test name %q exists in multiple packages, consider renaming it", name))
+	}
+	for name := range prefixed {
+		warnings = append(warnings, fmt.Sprintf("test name %q is prefixed by %d other tests, consider renaming it", name, prefixed[name]))
+	}
+	return warnings
+}
+
 func Assign(tests []testf, index int, total int, seed int64) (names, paths []string) {
 	// Shuffle the tests.
 	if seed != 0 {
@@ -102,13 +135,6 @@ func Assign(tests []testf, index int, total int, seed int64) (names, paths []str
 	// De-dupe.
 	slices.Sort(names)
 	slices.Sort(paths)
-
-	names = slices.CompactFunc(names, func(l, r string) bool {
-		if l == r {
-			fmt.Fprintf(os.Stderr, "warning: %q exists in multiple packages, consider renaming it\n", l)
-		}
-		return l == r
-	})
 	paths = slices.Compact(paths)
 
 	return names, paths
