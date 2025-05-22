@@ -7,7 +7,6 @@ import (
 )
 
 func TestCollect(t *testing.T) {
-
 	t.Run("ignored", func(t *testing.T) {
 		tests, err := Collect("testdata/ignored")
 		if err != nil {
@@ -39,7 +38,6 @@ func TestCollect(t *testing.T) {
 			t.Fatalf("wanted\n\t%+v\nbut got\n\t%+v", want, tests)
 		}
 	})
-
 }
 
 func TestAssign(t *testing.T) {
@@ -136,6 +134,49 @@ func TestAssign(t *testing.T) {
 			}
 			if !reflect.DeepEqual(tt.wantNames, names) {
 				t.Errorf("wanted\n\t%+v\nbut got\n\t%+v", tt.wantNames, names)
+			}
+		})
+	}
+}
+
+func TestCheckForClashingTestNames(t *testing.T) {
+	tests := []struct {
+		name  string
+		tests []testf
+		want  []string
+	}{
+		{
+			name: "no clashes",
+			tests: []testf{
+				{Path: "package", Name: "Test1"},
+				{Path: "other/package", Name: "Test2"},
+			},
+			want: []string{},
+		},
+		{
+			name: "clashes with same name",
+			tests: []testf{
+				{Path: "package", Name: "Test1"},
+				{Path: "other/package", Name: "Test1"},
+			},
+			want: []string{"test name \"Test1\" exists in multiple packages, consider renaming it"},
+		},
+		{
+			name: "no clashes with prefix",
+			tests: []testf{
+				{Path: "package", Name: "Test"},
+				{Path: "other/package", Name: "TestSuffix"},
+			},
+			want: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings := CheckForClashingTestNames(tt.tests)
+
+			if !reflect.DeepEqual(tt.want, warnings) {
+				t.Errorf("wanted\n\t%+v\nbut got\n\t%+v", tt.want, warnings)
 			}
 		})
 	}

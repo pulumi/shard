@@ -21,10 +21,11 @@ func main() {
 	total := flag.Int("total", -1, "total number of shards")
 	seed := flag.Int64("seed", 0, "randomly shuffle tests using this seed")
 	output := flag.String("output", "", "output format (env)")
+	errorOnNameClash := flag.Bool("error-on-name-clash", false, "error on test name clash")
 
 	flag.Parse()
 
-	p := prog{index: *index, total: *total, seed: *seed, root: *root, output: *output}
+	p := prog{index: *index, total: *total, seed: *seed, root: *root, output: *output, errorOnNameClash: *errorOnNameClash}
 	out, err := p.run()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -33,11 +34,12 @@ func main() {
 }
 
 type prog struct {
-	index  int
-	total  int
-	seed   int64
-	root   string
-	output string
+	index            int
+	total            int
+	seed             int64
+	root             string
+	output           string
+	errorOnNameClash bool
 }
 
 func (p prog) run() (string, error) {
@@ -54,6 +56,14 @@ func (p prog) run() (string, error) {
 	tests, err := internal.Collect(p.root)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	warnings := internal.CheckForClashingTestNames(tests)
+	if len(warnings) > 0 {
+		if p.errorOnNameClash {
+			return "", fmt.Errorf("found %d issues:\n%s", len(warnings), strings.Join(warnings, "\n"))
+		}
+		fmt.Fprintf(os.Stderr, "warning: found %d issues:\n%s", len(warnings), strings.Join(warnings, "\n"))
 	}
 
 	names, paths := internal.Assign(tests, p.index, p.total, p.seed)

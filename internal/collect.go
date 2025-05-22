@@ -80,6 +80,21 @@ func Collect(root string) ([]testf, error) {
 	return tests, err
 }
 
+func CheckForClashingTestNames(tests []testf) []string {
+	slices.SortFunc(tests, func(a, b testf) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	warnings := []string{}
+	for i := 0; i < len(tests)-1; i++ {
+		if tests[i].Name == tests[i+1].Name {
+			warnings = append(warnings, fmt.Sprintf("test name %q exists in multiple packages, consider renaming it", tests[i].Name))
+		}
+	}
+
+	return warnings
+}
+
 func Assign(tests []testf, index int, total int, seed int64) (names, paths []string) {
 	// Shuffle the tests.
 	if seed != 0 {
@@ -101,14 +116,8 @@ func Assign(tests []testf, index int, total int, seed int64) (names, paths []str
 
 	// De-dupe.
 	slices.Sort(names)
+	names = slices.Compact(names)
 	slices.Sort(paths)
-
-	names = slices.CompactFunc(names, func(l, r string) bool {
-		if l == r {
-			fmt.Fprintf(os.Stderr, "warning: %q exists in multiple packages, consider renaming it\n", l)
-		}
-		return l == r
-	})
 	paths = slices.Compact(paths)
 
 	return names, paths

@@ -15,12 +15,12 @@ func TestProg(t *testing.T) {
 		{
 			name: "default output",
 			p:    prog{total: 1, root: "."},
-			want: `-run "^(?:TestAssign|TestCollect|TestProg)\$"  ./. ./internal`,
+			want: `-run "^(?:TestAssign|TestCheckForClashingTestNames|TestCollect|TestProg)\$"  ./. ./internal`,
 		},
 		{
 			name: "env output",
 			p:    prog{output: "env", total: 1, root: "."},
-			want: `SHARD_TESTS="^(?:TestAssign|TestCollect|TestProg)\$"
+			want: `SHARD_TESTS="^(?:TestAssign|TestCheckForClashingTestNames|TestCollect|TestProg)\$"
 SHARD_PATHS="./. ./internal"`,
 		},
 	}
