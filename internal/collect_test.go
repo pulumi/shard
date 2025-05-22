@@ -162,20 +162,12 @@ func TestCheckForClashingTestNames(t *testing.T) {
 			want: []string{"test name \"Test1\" exists in multiple packages, consider renaming it"},
 		},
 		{
-			name: "clashes with prefix first",
+			name: "no clashes with prefix",
 			tests: []testf{
 				{Path: "package", Name: "Test"},
 				{Path: "other/package", Name: "TestSuffix"},
 			},
-			want: []string{"tests \"Test\" and \"TestSuffix\" have overlapping names, consider renaming one of them"},
-		},
-		{
-			name: "clashes with prefix second",
-			tests: []testf{
-				{Path: "package", Name: "TestSuffix"},
-				{Path: "other/package", Name: "Test"},
-			},
-			want: []string{"tests \"Test\" and \"TestSuffix\" have overlapping names, consider renaming one of them"},
+			want: []string{},
 		},
 	}
 

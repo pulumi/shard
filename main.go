@@ -21,7 +21,7 @@ func main() {
 	total := flag.Int("total", -1, "total number of shards")
 	seed := flag.Int64("seed", 0, "randomly shuffle tests using this seed")
 	output := flag.String("output", "", "output format (env)")
-	errorOnNameClash := flag.Bool("error-on-name-clash", false, "error on name clash")
+	errorOnNameClash := flag.Bool("error-on-name-clash", false, "error on test name clash")
 
 	flag.Parse()
 
